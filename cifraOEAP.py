@@ -56,15 +56,24 @@ def string_to_bits(texto):
 
 def padding(texto):
     string_bits = string_to_bits(texto)
-    string_bits = string_bits.ljust(BITS_M, '0')
-    print(string_bits) #nao sei bem se isso faz sentido
+    m = string_bits.ljust(BITS_M, '0') #nao sei bem se isso faz sentido mas acho que faz
+    return m
 
 def gera_aleatorio():
     return random.getrandbits(BITS_K)
 
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
+def OEAP(texto):
+    m = padding(texto)
+    r = gera_aleatorio()
+    # calcular G(r)
+
+    # precisa transformar a string em bit tpo '0110' -> 0b0110
+    # tpo os bits escritos na string em bits msm
+    # nao sei fazer isso 
 
 
+    # ...
 
 
 

@@ -30,7 +30,7 @@ from  cifraOEAP import *
 texto = 'marina'
 print(calcula_bits(texto))
 print(string_to_bits(texto))
-padding(texto)
+m = padding(texto)
 
 aleatorio = gera_aleatorio()
 print(aleatorio)
