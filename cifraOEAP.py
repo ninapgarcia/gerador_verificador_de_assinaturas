@@ -1,7 +1,18 @@
 
 from sys import getsizeof
 import random
+from xml.etree.ElementTree import tostring
 from bitstring import BitStream, BitArray
+
+# Acelerando :)
+from Crypto.Math.Numbers import Integer
+
+from cryptography.hazmat.primitives import hashes
+
+from chavesRSA import *
+
+
+
 
 """
 Temos uma mensagem de menos de m bits
@@ -69,10 +80,43 @@ def convert_bit_string_to_int(bitstring):
 def convert_int_to_bit_string(num, bit_len=BITS_M):
     return BitArray(uint=num, length=bit_len).bin
 
+def G(r):
+    digest = hashes.Hash(hashes.SHAKE128(BITS_M))
+    digest.update(r)
+    return int.from_bytes(digest.finalize(), 'big')
+
+def H(p1):
+    digest = hashes.Hash(hashes.SHAKE128(BITS_K)) 
+    digest.update(p1)
+    return int.from_bytes(digest.finalize(), 'big')
+
+
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
-def OEAP(texto):
+def cifra_OAEP(texto):
+
     m = padding(texto)
     r = gera_aleatorio()
+
+    print("R: ", r)
+
+    r_bits = str(r).encode()
+    print("Oi: ", r_bits)
+
+    P1 = convert_bit_string_to_int(m) ^ G(r_bits)
+
+
+    P2 = r ^ H(P1.to_bytes(BITS_M, 'big'))
+
+    print("P1: ", P1)
+
+    print("P2: ", P2)
+
+    P = str(P1) + str(P2)
+
+    print("P: ", P)
+
+    return cifraRSA(int(P))
+
     # calcular G(r)
 
     # precisa transformar a string em bit tpo '0110' -> 0b0110
@@ -86,10 +130,31 @@ def OEAP(texto):
 
 
 
-def cifraRSA(texto, e, n):
-    texto_cifrado = pow(texto, e, n)
-    return texto_cifrado
+def cifraRSA(texto):
+    p, q = gera_primos()
+    print('p = ', p)
+    print('q = ', q)
+
+    n = calcula_n(p, q)
+    print('n = ', n)
+
+    z = calcula_z(p, q)
+    print('z = ', z)
+
+    e = calcula_e(z)
+    print('e = ', e)
+
+    # d = calcula_d(e, z)
+    d = 22322989
+    print('d = ', d)
+    
+
+    texto_cifrado = pow(Integer(texto), Integer(e), Integer(n))
+
+    return texto_cifrado, d, n
 
 def decifraRSA(texto_cifrado, d, n):
-    texto = pow(texto_cifrado, d, n)
+    texto = pow(Integer(texto_cifrado), Integer(d), Integer(n))
     return texto
+
+
