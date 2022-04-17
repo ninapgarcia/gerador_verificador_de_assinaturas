@@ -1,6 +1,7 @@
 
 from sys import getsizeof
 import random
+from bitstring import BitStream, BitArray
 
 """
 Temos uma mensagem de menos de m bits
@@ -61,6 +62,12 @@ def padding(texto):
 
 def gera_aleatorio():
     return random.getrandbits(BITS_K)
+
+def convert_bit_string_to_int(bitstring):
+    return int(bitstring, 2)
+
+def convert_int_to_bit_string(num, bit_len=BITS_M):
+    return BitArray(uint=num, length=bit_len).bin
 
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
 def OEAP(texto):

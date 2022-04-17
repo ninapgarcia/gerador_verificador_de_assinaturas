@@ -36,11 +36,10 @@ def calcula_e(z):
 
 def calcula_d(e, z):
     d = 1
-    while True:
+    while d != z:
         if (e*d) % z == 1:
             return d
-        if d > 1000000:
-            print('nao foi encontrado d menor que 1000000')
-            break
         d += 1
+    print('Não tem inverso modular')
+    return 0
 

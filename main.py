@@ -28,15 +28,29 @@ from  cifraOEAP import *
 
 
 texto = 'marina'
-print(calcula_bits(texto))
-print(string_to_bits(texto))
+print("Tamanho do texto em bits:\t", calcula_bits(texto))
+print("Texto em bits:\t\t\t", string_to_bits(texto))
+
 m = padding(texto)
+print("Texto com padding:\t\t", m)
 
 aleatorio = gera_aleatorio()
 print(aleatorio)
 bin_aleatorio = bin(aleatorio)[2:]
 print(bin_aleatorio)
 print(len(bin_aleatorio))
+
+a = '1000100101'
+b = '1000011000'
+
+c = convert_bit_string_to_int(a) ^ convert_bit_string_to_int(b)
+
+print('\n\n')
+print(a)
+print('^')
+print(b)
+print('=')
+print(convert_int_to_bit_string(c))
 
 
 
