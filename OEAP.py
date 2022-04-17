@@ -9,7 +9,7 @@ from Crypto.Math.Numbers import Integer
 
 from cryptography.hazmat.primitives import hashes
 
-from chavesRSA import *
+from RSA import *
 
 import base64
 
@@ -97,7 +97,7 @@ def xor(m, G):
     print(m)
     print(len(G))
     print([bin(g) for g in G])
-    return [aa^int(bb)) for aa, bb in zip(m, G)]
+    # return [aa^int(bb)) for aa, bb in zip(m, G)]
 
 
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
@@ -142,31 +142,6 @@ def cifra_OAEP(texto):
 
 
 
-def cifraRSA(texto):
-    p, q = gera_primos()
-    print('p = ', p)
-    print('q = ', q)
 
-    n = calcula_n(p, q)
-    print('n = ', n)
-
-    z = calcula_z(p, q)
-    print('z = ', z)
-
-    e = calcula_e(z)
-    print('e = ', e)
-
-    # d = calcula_d(e, z)
-    d = 22322989
-    print('d = ', d)
-    
-
-    texto_cifrado = pow(Integer(texto), Integer(e), Integer(n))
-
-    return texto_cifrado, d, n
-
-def decifraRSA(texto_cifrado, d, n):
-    texto = pow(Integer(texto_cifrado), Integer(d), Integer(n))
-    return texto
 
 

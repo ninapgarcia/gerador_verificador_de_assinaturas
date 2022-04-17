@@ -49,3 +49,29 @@ def calcula_d(e, z):
     print('Não tem inverso modular')
     return 0
 
+def cifraRSA(texto):
+    p, q = gera_primos()
+    print('p = ', p)
+    print('q = ', q)
+
+    n = calcula_n(p, q)
+    print('n = ', n)
+
+    z = calcula_z(p, q)
+    print('z = ', z)
+
+    e = calcula_e(z)
+    print('e = ', e)
+
+    # d = calcula_d(e, z)
+    d = 22322989
+    print('d = ', d)
+    
+
+    texto_cifrado = pow(Integer(texto), Integer(e), Integer(n))
+
+    return texto_cifrado, d, n
+
+def decifraRSA(texto_cifrado, d, n):
+    texto = pow(Integer(texto_cifrado), Integer(d), Integer(n))
+    return texto
