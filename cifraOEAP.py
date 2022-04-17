@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives import hashes
 
 from chavesRSA import *
 
+import base64
+
 
 
 
@@ -55,7 +57,7 @@ Para decifrar:
 
 # numero de bits m e k
 BITS_M = 128
-BITS_K = 16
+BITS_K = 28
 
 
 def calcula_bits(texto):
@@ -81,14 +83,21 @@ def convert_int_to_bit_string(num, bit_len=BITS_M):
     return BitArray(uint=num, length=bit_len).bin
 
 def G(r):
-    digest = hashes.Hash(hashes.SHAKE128(BITS_M))
+    digest = hashes.Hash(hashes.SHAKE128(16))
     digest.update(r)
-    return int.from_bytes(digest.finalize(), 'big')
+    return digest.finalize()
 
 def H(p1):
     digest = hashes.Hash(hashes.SHAKE128(BITS_K)) 
     digest.update(p1)
-    return int.from_bytes(digest.finalize(), 'big')
+    return digest.finalize()
+
+def xor(m, G):
+    print(len(m))
+    print(m)
+    print(len(G))
+    print([bin(g) for g in G])
+    return [aa^int(bb)) for aa, bb in zip(m, G)]
 
 
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
@@ -102,10 +111,13 @@ def cifra_OAEP(texto):
     r_bits = str(r).encode()
     print("Oi: ", r_bits)
 
-    P1 = convert_bit_string_to_int(m) ^ G(r_bits)
+    P1 = xor(m, G(r_bits))
 
+    print(P1)
 
-    P2 = r ^ H(P1.to_bytes(BITS_M, 'big'))
+    print("PASSOU DA 110")
+
+    P2 = r ^ H(str(P1).encode())
 
     print("P1: ", P1)
 
