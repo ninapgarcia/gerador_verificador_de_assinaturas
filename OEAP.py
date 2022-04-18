@@ -170,15 +170,30 @@ def cifra_OAEP(texto):
     print()
     print("P1: ", P1)
     print("P2: ", P2)
-    P = str(P1) + str(P2)
+    print("P2_len: ", len(convert_int_to_bit_string(P2)))
+
+    # Se não for no formato de bits ele quebra na outra parte kkkry -> Isso deve dar uim depois
+    P = convert_int_to_bit_string(P1, BITS_M) + convert_int_to_bit_string(P2, BITS_K)
     print("P: ", P)
 
-    # Não vai funcionar RSA pq o nosso só suporta numerozinhos
     # return cifraRSA(int(P))
+    # Não vai funcionar RSA pq o nosso só suporta numerozinhos
+    return P
+    
+def decifra_OAEP(texto_cifrado):
 
-    # calcular G(r)
-    # ...
+    # texto_bits = convert_int_to_bit_string(int(texto_cifrado), BITS_M+BITS_K)
+    P1 = texto_cifrado[:-BITS_K]
+    P2 = texto_cifrado[len(texto_cifrado)-BITS_K:]
 
+    P1_int = convert_bit_string_to_int(P1)
+    print("P1: ", P1_int)
+    P2_int = convert_bit_string_to_int(P2)
+    print("P2: ", P2_int)
+    print("P1_len: ", len(P1))
+    print("P2_len: ", len(P2))
+
+    
 
 
 
