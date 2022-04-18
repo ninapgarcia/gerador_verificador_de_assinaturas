@@ -16,11 +16,12 @@ print("Decifrado: ", texto)
 
 print("---------------------------------------------------")
 
-texto_cifrado, d, n = cifra_OAEP('5')
+# texto_cifrado, d, n = 
+cifra_OAEP('5')
 
-print("Texto cifrado OAEP: ", texto_cifrado )
+# print("Texto cifrado OAEP: ", texto_cifrado )
 
-print("Texto decifrado OAEP: ", decifraRSA(texto_cifrado, d, n))
+# print("Texto decifrado OAEP: ", decifraRSA(texto_cifrado, d, n))
 
 
 

@@ -13,6 +13,9 @@ from RSA import *
 
 import base64
 
+import hashlib
+
+from binascii import hexlify
 
 
 
@@ -57,7 +60,7 @@ Para decifrar:
 
 # numero de bits m e k
 BITS_M = 128
-BITS_K = 28
+BITS_K = 32
 
 
 def calcula_bits(texto):
@@ -82,21 +85,43 @@ def convert_bit_string_to_int(bitstring):
 def convert_int_to_bit_string(num, bit_len=BITS_M):
     return BitArray(uint=num, length=bit_len).bin
 
-def G(r):
-    digest = hashes.Hash(hashes.SHAKE128(16))
-    digest.update(r)
-    return digest.finalize()
+# def G(r):
+#     digest = hashes.Hash(hashes.SHAKE128(16))
+#     digest.update(r)
+#     return digest.finalize()
 
-def H(p1):
-    digest = hashes.Hash(hashes.SHAKE128(BITS_K)) 
-    digest.update(p1)
-    return digest.finalize()
+# def H(p1):
+#     digest = hashes.Hash(hashes.SHAKE128(BITS_K)) 
+#     digest.update(p1)
+#     return digest.finalize()
 
-def xor(m, G):
-    print(len(m))
-    print(m)
-    print(len(G))
-    print([bin(g) for g in G])
+# def string_xor(a, b):
+#     return int(a) ^ int(b)
+
+# def xor(m, G):
+#     print(len(m))
+#     print(m)
+#     print(len(G))
+#     G_str = [str(int(bin(g), 2)) for g in G]
+#     G_bin = [string_to_bits(g) for g in G_str]
+#     print("".join(G_bin))
+
+
+
+def i2osp(integer: int, size: int = 4) -> str:
+    return b"".join([chr((integer >> (8 * i)) & 0xFF).encode() for i in reversed(range(size))])
+
+def mgf1(input_str: bytes, length: int, hash_func=hashlib.sha1) -> str:
+    """Mask generation function."""
+    counter = 0
+    output = b""
+    while len(output) < length:
+        C = i2osp(counter, 4)
+        output += hash_func(input_str + C).digest()
+        counter += 1
+    return output[:length]
+
+    
     # return [aa^int(bb)) for aa, bb in zip(m, G)]
 
 
@@ -109,33 +134,49 @@ def cifra_OAEP(texto):
     print("R: ", r)
 
     r_bits = str(r).encode()
-    print("Oi: ", r_bits)
+    
+    # Converte 
+    # G - Converte para Hexadecimal
+    r_masked = mgf1(r_bits, BITS_M//8)
+    print("r_masked: ", r_masked)
+    print("r_masked-LEN_bytes: ", len(r_masked))
+    r_masked_int = int.from_bytes(r_masked, 'big')
+    print("r_masked: ", r_masked_int)
+    print("r_masked_len_bits:", len(convert_int_to_bit_string(r_masked_int)))
+    G = r_masked_int
 
-    P1 = xor(m, G(r_bits))
+    print()
 
-    print(P1)
-
-    print("PASSOU DA 110")
-
-    P2 = r ^ H(str(P1).encode())
-
+    # Calculando P1 
+    P1 = convert_bit_string_to_int(m) ^ G
     print("P1: ", P1)
+    print("P1_len_bits: ", len(convert_int_to_bit_string(P1)))
+    print()
 
+
+    P1_bytes = P1.to_bytes(BITS_M//8, 'big')
+    print("P1_bytes: ", P1_bytes)
+    print("P1_bytes_len: ", len(P1_bytes))
+    P1_masked = mgf1(P1_bytes, BITS_K//8)
+    print("P1_masked: ", P1_masked)
+    print("P1_masked_len: ", len(P1_masked))
+
+    P1_masked_int = int.from_bytes(P1_masked, 'big')
+    print("P1_masked_int: ", P1_masked_int)
+    print("P1_masked_len_bits: ", len(convert_int_to_bit_string(P1_masked_int, BITS_K)))
+
+    P2 = r ^ P1_masked_int
+
+    print()
+    print("P1: ", P1)
     print("P2: ", P2)
-
     P = str(P1) + str(P2)
-
     print("P: ", P)
 
-    return cifraRSA(int(P))
+    # Não vai funcionar RSA pq o nosso só suporta numerozinhos
+    # return cifraRSA(int(P))
 
     # calcular G(r)
-
-    # precisa transformar a string em bit tpo '0110' -> 0b0110
-    # tpo os bits escritos na string em bits msm
-    # nao sei fazer isso 
-
-
     # ...
 
 
