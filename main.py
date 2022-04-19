@@ -17,7 +17,10 @@ print("Decifrado: ", texto)
 print("---------------------------------------------------")
 
 # texto_cifrado, d, n = 
-texto_cifrado = cifra_OAEP('5')
+texto_cifrado = cifra_OAEP('54454654')
+
+
+print("---------------------------------------------------")
 
 decifra_OAEP(texto_cifrado)
 

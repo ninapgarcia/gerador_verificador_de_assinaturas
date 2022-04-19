@@ -127,8 +127,11 @@ def mgf1(input_str: bytes, length: int, hash_func=hashlib.sha1) -> str:
 
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
 def cifra_OAEP(texto):
-
+    print(texto)
     m = padding(texto)
+    print("Inicio: ", m)
+    print("Inicial: ", m)
+
     r = gera_aleatorio()
 
     print("R: ", r)
@@ -181,7 +184,6 @@ def cifra_OAEP(texto):
     return P
     
 def decifra_OAEP(texto_cifrado):
-
     # texto_bits = convert_int_to_bit_string(int(texto_cifrado), BITS_M+BITS_K)
     P1 = texto_cifrado[:-BITS_K]
     P2 = texto_cifrado[len(texto_cifrado)-BITS_K:]
@@ -193,8 +195,33 @@ def decifra_OAEP(texto_cifrado):
     print("P1_len: ", len(P1))
     print("P2_len: ", len(P2))
 
-    
+    P1_int = convert_bit_string_to_int(P1)
+    print("P1_int: ", P1_int)
 
+    P2_int = convert_bit_string_to_int(P2)
+    print("P2_int", P2)
+
+    P1_bytes = P1_int.to_bytes(BITS_M//8, 'big')
+
+    P1_masked = mgf1(P1_bytes, BITS_K//8)
+
+    P1_masked_int = int.from_bytes(P1_masked, 'big')
+
+    r = P1_masked_int ^ P2_int
+
+    print("r: ", r) 
+
+    r_bytes = r.to_bytes(BITS_K//8, 'big')
+    
+    r_masked = mgf1(r_bytes, BITS_M//8)
+
+    r_masked_int = int.from_bytes(r_masked, 'big')
+
+    print(len(convert_int_to_bit_string(P1_int)))
+    print(len(convert_int_to_bit_string(r)))
+    texto_decifrado = P1_int ^ r_masked_int
+    print(texto_decifrado)
+    print("Final: ", texto_decifrado)
 
 
 
