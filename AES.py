@@ -1,5 +1,7 @@
 
 import random
+import string 
+import codecs
 
 """
 1. gerar a chave
@@ -86,10 +88,18 @@ INV_SBOX = (
     0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D,
 )
 
+# usado na expasao da chave
+RCON = (
+    0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
+    0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A,
+    0x2F, 0x5E, 0xBC, 0x63, 0xC6, 0x97, 0x35, 0x6A,
+    0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
+)
+
 def gera_chave():
     #talvez seja so qualquer coisa segundo o mateusinho
     # vamo usar 128 bits pq n sei usar as outras
-    return random.getrandbits(128)
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
 
 def msg_padding(msg):
@@ -110,6 +120,7 @@ def vetor_para_matriz(msg):
     blocos_matriz = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
     return blocos_matriz
 
+
 # def expansao_chave(chave):
 
 
@@ -123,12 +134,15 @@ chave = gera_chave()
 print('CHAVE: ', chave)
 
 msg = "marina joana rafael fernanda lucas bla bla "
-
 mas_c_padding = msg_padding(msg.encode())
-print('MENSAGEM COM PADDING: ', mas_c_padding)
+print('\nMENSAGEM COM PADDING: ', mas_c_padding)
 
 blocos = msg_em_blocos(mas_c_padding)
-print('MENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
+print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
 
 for bloco in blocos:
-    print('MATRIZ: ', vetor_para_matriz(bloco))
+    print('\nMATRIZ: ', vetor_para_matriz(bloco))
+
+chave_matriz = vetor_para_matriz(chave.encode())
+print('\nCHAVE EM MATRIZ: ', chave_matriz)
+
