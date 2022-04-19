@@ -7,7 +7,7 @@ from Crypto.Math.Numbers import Integer
 
 # print(gera_primo(1024))
 
-texto = 12355678
+texto = 12973183183831987398127319827319873981733
 print("Original: ", texto)
 
 texto_cifrado, d, n = cifraRSA(texto)
