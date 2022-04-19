@@ -17,6 +17,8 @@ import hashlib
 
 from binascii import hexlify
 
+from colors import printBlue, printGreen
+
 
 
 """
@@ -128,16 +130,17 @@ def cifra_OAEP(texto):
 
     # Se não for no formato de bits ele quebra na outra parte kkkry -> Isso deve dar uim depois
     P = converte_int_to_bit_string(P1, BITS_M) + converte_int_to_bit_string(P2, BITS_K)
-    print("P: ", P)
 
-    # return cifraRSA(int(P))
-    # Não vai funcionar RSA pq o nosso só suporta numerozinhos
-    return P
+    P_int = int(P, 2)
+    printBlue([P_int])
+    return cifraRSA(P_int)
     
-def decifra_OAEP(texto_cifrado):
-    # texto_bits = convert_int_to_bit_string(int(texto_cifrado), BITS_M+BITS_K)
-    P1_int = converte_bit_string_to_int(texto_cifrado[:-BITS_K])
-    P2_int = converte_bit_string_to_int(texto_cifrado[len(texto_cifrado)-BITS_K:])
+def decifra_OAEP(texto_cifrado,d, n):
+    texto_decifradoRSA = decifraRSA(texto_cifrado, d, n)
+    texto_decifradoRSA_bits =  converte_int_to_bit_string(texto_decifradoRSA, BITS_M+BITS_K)
+
+    P1_int = converte_bit_string_to_int(texto_decifradoRSA_bits[:-BITS_K])
+    P2_int = converte_bit_string_to_int(texto_decifradoRSA_bits[len(texto_decifradoRSA_bits)-BITS_K:])
 
     r = H(P1_int) ^ P2_int
 
