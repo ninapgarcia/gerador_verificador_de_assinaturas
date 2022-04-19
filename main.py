@@ -5,6 +5,8 @@ from RSA import *
 from Crypto.Math.Numbers import Integer
 
 
+# print(gera_primo(1024))
+
 texto = 12355678
 print("Original: ", texto)
 
@@ -14,15 +16,15 @@ print("Cifrado: ", texto_cifrado)
 texto = decifraRSA(texto_cifrado, d, n)
 print("Decifrado: ", texto)
 
-print("---------------------------------------------------")
+# print("---------------------------------------------------")
 
-# texto_cifrado, d, n = 
-texto_cifrado = cifra_OAEP('5')
+# # texto_cifrado, d, n = 
+# texto_cifrado = cifra_OAEP('5')
 
 
-print("---------------------------------------------------")
+# print("---------------------------------------------------")
 
-decifra_OAEP(texto_cifrado)
+# decifra_OAEP(texto_cifrado)
 
 # print("Texto cifrado OAEP: ", texto_cifrado )
 
