@@ -3,6 +3,9 @@ import random
 import string 
 import codecs
 
+# LINK MT MT IMPORTANTE:
+# https://github.com/boppreh/aes/blob/master/aes.py
+
 """
 1. gerar a chave
     - 128 bits -> 10 rounds
