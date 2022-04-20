@@ -1,7 +1,11 @@
 
+from ast import Return
 import random
+from socket import AF_UNIX
 import string 
-import codecs
+import numpy as np
+
+from pyparsing import col
 
 # LINK MT MT IMPORTANTE:
 # https://github.com/boppreh/aes/blob/master/aes.py
@@ -123,15 +127,72 @@ def vetor_para_matriz(msg):
     blocos_matriz = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
     return blocos_matriz
 
+def coluna_shift(coluna):
+    # usada na expansao da chave
+    aux = coluna[0]
+    coluna[0] = coluna[1]
+    coluna[1] = coluna[2]
+    coluna[2] = coluna[3]
+    coluna[3] = aux
+    return coluna
 
-# def expansao_chave(chave):
+def byte_substituicao(coluna):
+    sub_coluna = [SBOX[b] for b in coluna]
+    return sub_coluna
+
+def add_rcon(coluna, round):
+    coluna[0] = coluna[0] ^ RCON[round]
+    return coluna
+    
+def xor_colunas(coluna1, coluna2):
+    colunas_xor = []
+    for i in range(len(coluna1)):
+        colunas_xor.append(coluna1[i] ^ coluna2[i])
+    return colunas_xor
+
+def expansao_chave(chave, round):
+    #realiza a expansao da chave
+
+    chave_expandida = np.zeros((4, 4))
+    ultima_coluna = chave_matriz[3]
+    # print('\nULTIMA COLUNA: ', ultima_coluna_chave)
+
+    coluna_shifted = coluna_shift(ultima_coluna)
+    # print('\nSHIFT NA COLUNA: ', coluna_shifted)
+
+    sub_coluna = byte_substituicao(coluna_shifted)
+    # print('\nCOLUNA SBOX: ', sub_coluna)
+
+    coluna_rcon = add_rcon(sub_coluna, round)
+    # print('COLUNA RCON: ', coluna_rcon)
+
+    # xor das colunas
+    coluna0 = xor_colunas(coluna_rcon, chave[0])
+    coluna1 = xor_colunas(coluna0, chave[1])
+    coluna2 = xor_colunas(coluna1, chave[2])
+    coluna3 = xor_colunas(coluna2,  chave[3])
+
+    chave_expandida[:, 0] = coluna0
+    chave_expandida[:, 1] = coluna1
+    chave_expandida[:, 2] = coluna2
+    chave_expandida[:, 3] = coluna3
+
+    return chave_expandida
 
 
-
+# por enquanto so usei pra visualizacao mas acho q vai ser util
+def int_para_hex(lista):
+    lista_hex = []
+    for elem in lista:
+        lista_hex.append(hex(elem))
+    return lista_hex
 
 
 
 # TESTES -------------------------------------------------------------------
+
+# IMPORTANTE 
+# cada vetor printado representa uma COLUNA  e nao uma lINHA 
 
 chave = gera_chave()
 print('CHAVE: ', chave)
@@ -148,4 +209,11 @@ for bloco in blocos:
 
 chave_matriz = vetor_para_matriz(chave.encode())
 print('\nCHAVE EM MATRIZ: ', chave_matriz)
+
+
+
+chave_expandida = expansao_chave(chave_matriz, 1)
+print('\nCHAVE EXPANDIDA: ', chave_expandida)
+
+
 
