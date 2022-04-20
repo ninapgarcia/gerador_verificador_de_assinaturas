@@ -72,9 +72,14 @@ def string_to_bits(texto):
     string_bits = ''.join(format(ord(i), '08b') for i in texto)
     return string_bits
 
+def bits_to_string(string_bits):
+    s_list = [string_bits[i:i+8] for i in range(0, len(string_bits), 8)]
+    int_list = [int(x, 2) for x in s_list]
+    return "".join(chr(element) for element in int_list)
+
 def padding(texto):
     string_bits = string_to_bits(texto)
-    m = string_bits.ljust(BITS_M, '0') #nao sei bem se isso faz sentido mas acho que faz
+    m = string_bits.rjust(BITS_M, '0') #nao sei bem se isso faz sentido mas acho que faz
     return m
 
 def gera_aleatorio():
@@ -148,6 +153,7 @@ def decifra_OAEP(texto_cifrado,d, n):
 
     print("Final: ", converte_int_to_bit_string(texto_decifrado))
 
+    return bits_to_string(converte_int_to_bit_string(texto_decifrado))
     # Tem que tirar o padding agora -> tô dúvida como fazer isso
     # Tipo, que valores a gente pode usar pra fazer isso
 
