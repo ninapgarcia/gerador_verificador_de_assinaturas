@@ -14,7 +14,7 @@ from colors import *
 
 # print("---------------------------------------------------")
 
-texto_original = '5' 
+texto_original = '4354131313' 
 print(BLUE, "ORIGINAL: \t", RESET , texto_original)
 
 texto_cifrado, d, n = cifra_OAEP(texto_original)

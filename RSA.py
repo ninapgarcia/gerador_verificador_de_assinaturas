@@ -74,22 +74,22 @@ def calcula_e(z):
 def calcula_d(e, z):
     return pow(e, -1, z)
 
-def cifraRSA(texto):
+def cifraRSA(texto, display=False):
     p, q = gera_p_q()
-    print('p = ', p)
-    print('q = ', q)
+    if not display: print('p = ', p)
+    if not display: print('q = ', q)
 
     n = calcula_n(p, q)
-    print('n = ', n)
+    if not display: print('n = ', n)
 
     z = calcula_z(p, q)
-    print('z = ', z)
+    if not display: print('z = ', z)
 
     e = calcula_e(z)
-    print('e = ', e)
+    if not display: print('e = ', e)
 
     d = calcula_d(e, z)
-    print('d = ', d)
+    if not display: print('d = ', d)
     
     texto_cifrado = pow(Integer(texto), Integer(e), Integer(n))
     return texto_cifrado, d, n
