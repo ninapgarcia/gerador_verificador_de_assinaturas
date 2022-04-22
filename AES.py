@@ -49,6 +49,13 @@ ROUND: 3 ao 9 -> repetir de acordo com a quantidade de rounds
 -> vamos ter um nonce e um contador tambem (o contador vai contando os blocos)
 -> ainda n sei o que fazer com isso 
 
+- AINDA TEM A PARTE DO MODO CTR
+ -> nao tenho ctz se entendi bem 
+ -> eu entendi a msm coisa q o mateusinho mas n faz sentido pra mim 
+ -> u vou usar o AES para cifrar o nonce+contador (128bits, 64 de cada) e depois de 
+    tudo eu faco xor do resultado com a o primeiro bloco da msg
+-> incrementa o contador e vai repetindo isso pra cada bloco
+
 """
 
 # para substituicao de bytes na cifracao
