@@ -124,8 +124,13 @@ def msg_em_blocos(message):
 def vetor_para_matriz(msg):
     # transforma o vetor de 16 bytes em uma matriz 4x4
     # nao tenho ctz absoluta disso
-    blocos_matriz = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
-    return blocos_matriz
+    bloco_vetores = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
+    bloco_matriz = np.zeros((4, 4))
+    bloco_matriz[:, 0] = bloco_vetores[0]
+    bloco_matriz[:, 1] = bloco_vetores[1]
+    bloco_matriz[:, 2] = bloco_vetores[2]
+    bloco_matriz[:, 3] = bloco_vetores[3]
+    return bloco_matriz.astype(int)
 
 def coluna_shift(coluna):
     # usada na expansao da chave
@@ -177,7 +182,17 @@ def expansao_chave(chave, round):
     chave_expandida[:, 2] = coluna2
     chave_expandida[:, 3] = coluna3
 
-    return chave_expandida
+    return chave_expandida.astype(int)
+
+def xor_matrizes(matriz1, matriz2):
+    # xor de duas matrizes elemento a elemento
+    print('a')
+    result = np.zeros((4, 4))
+    for i in range(4):
+        for j in range(4):
+            result[i][j] = matriz1[i][j] ^ matriz2[i][j]
+            
+    return result.astype(int)
 
 
 # por enquanto so usei pra visualizacao mas acho q vai ser util
@@ -197,7 +212,7 @@ def int_para_hex(lista):
 chave = gera_chave()
 print('CHAVE: ', chave)
 
-msg = "marina joana rafael fernanda lucas bla bla "
+msg = "marina bla bla "
 mas_c_padding = msg_padding(msg.encode())
 print('\nMENSAGEM COM PADDING: ', mas_c_padding)
 
@@ -205,7 +220,8 @@ blocos = msg_em_blocos(mas_c_padding)
 print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
 
 for bloco in blocos:
-    print('\nMATRIZ: ', vetor_para_matriz(bloco))
+    bloco1_msg = vetor_para_matriz(bloco)
+    print('\nMATRIZ: ', bloco1_msg)
 
 chave_matriz = vetor_para_matriz(chave.encode())
 print('\nCHAVE EM MATRIZ: ', chave_matriz)
@@ -216,4 +232,5 @@ chave_expandida = expansao_chave(chave_matriz, 1)
 print('\nCHAVE EXPANDIDA: ', chave_expandida)
 
 
-
+msg_xor_chave = xor_matrizes(bloco1_msg, chave_expandida)
+print('\nMSG XOR CHAVE: ', msg_xor_chave)
