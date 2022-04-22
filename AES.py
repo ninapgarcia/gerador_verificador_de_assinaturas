@@ -45,9 +45,7 @@ ROUND: 3 ao 9 -> repetir de acordo com a quantidade de rounds
 - DIVISAO DA MENSAGEM EM BLOCOS
 
 -> a mensagem deve ser dividida em blocos de 128 bits
--> se a ultima n tiver 16 byter faz um padding acho 
--> vamos ter um nonce e um contador tambem (o contador vai contando os blocos)
--> ainda n sei o que fazer com isso 
+-> se a ultima n tiver 16 byter faz um padding pra completar 
 
 - AINDA TEM A PARTE DO MODO CTR
  -> nao tenho ctz se entendi bem 
@@ -98,7 +96,7 @@ INV_SBOX = (
     0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D,
 )
 
-# usado na expasao da chave
+# usado na expansao da chave
 RCON = (
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
     0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A,
