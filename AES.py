@@ -1,7 +1,7 @@
 
 import random
 import string 
-import codecs
+import numpy as np
 
 # LINK MT MT IMPORTANTE:
 # https://github.com/boppreh/aes/blob/master/aes.py
@@ -45,9 +45,14 @@ ROUND: 3 ao 9 -> repetir de acordo com a quantidade de rounds
 - DIVISAO DA MENSAGEM EM BLOCOS
 
 -> a mensagem deve ser dividida em blocos de 128 bits
--> se a ultima n tiver 16 byter faz um padding acho 
--> vamos ter um nonce e um contador tambem (o contador vai contando os blocos)
--> ainda n sei o que fazer com isso 
+-> se a ultima n tiver 16 byter faz um padding pra completar 
+
+- AINDA TEM A PARTE DO MODO CTR
+ -> nao tenho ctz se entendi bem 
+ -> eu entendi a msm coisa q o mateusinho mas n faz sentido pra mim 
+ -> u vou usar o AES para cifrar o nonce+contador (128bits, 64 de cada) e depois de 
+    tudo eu faco xor do resultado com a o primeiro bloco da msg
+-> incrementa o contador e vai repetindo isso pra cada bloco
 
 """
 
@@ -91,7 +96,7 @@ INV_SBOX = (
     0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D,
 )
 
-# usado na expasao da chave
+# usado na expansao da chave
 RCON = (
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
     0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A,
@@ -120,32 +125,217 @@ def msg_em_blocos(message):
 def vetor_para_matriz(msg):
     # transforma o vetor de 16 bytes em uma matriz 4x4
     # nao tenho ctz absoluta disso
-    blocos_matriz = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
-    return blocos_matriz
+    bloco_vetores = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
+    bloco_matriz = np.zeros((4, 4))
+    bloco_matriz[:, 0] = bloco_vetores[0]
+    bloco_matriz[:, 1] = bloco_vetores[1]
+    bloco_matriz[:, 2] = bloco_vetores[2]
+    bloco_matriz[:, 3] = bloco_vetores[3]
+    return bloco_matriz.astype(int)
+
+def coluna_shift(coluna):
+    # usada na expansao da chave
+    aux = coluna[0]
+    coluna[0] = coluna[1]
+    coluna[1] = coluna[2]
+    coluna[2] = coluna[3]
+    coluna[3] = aux
+    return coluna
+
+def byte_substituicao(coluna):
+    sub_coluna = [SBOX[b] for b in coluna]
+    return sub_coluna
+
+def add_rcon(coluna, round):
+    coluna[0] = coluna[0] ^ RCON[round]
+    return coluna
+    
+def xor_colunas(coluna1, coluna2):
+    colunas_xor = []
+    for i in range(len(coluna1)):
+        colunas_xor.append(coluna1[i] ^ coluna2[i])
+    return colunas_xor
+
+def expansao_chave(chave, round):
+    #realiza a expansao da chave
+
+    chave_expandida = np.zeros((4, 4))
+    ultima_coluna = chave[:, 3]
+    # print('\nULTIMA COLUNA: ', ultima_coluna_chave)
+
+    coluna_shifted = coluna_shift(ultima_coluna)
+    # print('\nSHIFT NA COLUNA: ', coluna_shifted)
+
+    sub_coluna = byte_substituicao(coluna_shifted)
+    # print('\nCOLUNA SBOX: ', sub_coluna)
+
+    coluna_rcon = add_rcon(sub_coluna, round)
+    # print('COLUNA RCON: ', coluna_rcon)
+
+    # xor das colunas
+    coluna0 = xor_colunas(coluna_rcon, chave[:, 0])
+    coluna1 = xor_colunas(coluna0, chave[:, 1])
+    coluna2 = xor_colunas(coluna1, chave[:, 2])
+    coluna3 = xor_colunas(coluna2,  chave[:, 3])
+
+    chave_expandida[:, 0] = coluna0
+    chave_expandida[:, 1] = coluna1
+    chave_expandida[:, 2] = coluna2
+    chave_expandida[:, 3] = coluna3
+
+    return chave_expandida.astype(int)
+
+def xor_matrizes(matriz1, matriz2):
+    # xor de duas matrizes elemento a elemento
+    result = np.zeros((4, 4))
+    for i in range(4):
+        for j in range(4):
+            result[i][j] = matriz1[i][j] ^ matriz2[i][j]
+            
+    return result.astype(int)
+
+def row_shift(matriz):
+    #linha 2
+    matriz[1][0], matriz[1][1], matriz[1][2], matriz[1][3] = matriz[1][1], matriz[1][2], matriz[1][3], matriz[1][0]
+    #linha 3
+    matriz[2][0], matriz[2][1], matriz[2][2], matriz[2][3] = matriz[2][1], matriz[2][2], matriz[2][3], matriz[2][0]
+    #linha 4
+    matriz[3][0], matriz[3][1], matriz[3][2], matriz[3][3] = matriz[3][1], matriz[3][2], matriz[3][3], matriz[3][0]
+
+    return matriz.astype(int)
+
+# essa parte eu peguei do git do homi 
+# https://github.com/boppreh/aes/blob/master/aes.py
+# ---------------------------------------------------------------------
+
+# learned from http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+xtime = lambda a: (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1) # o q ta rolando aq??? K K
+
+def mix_uma_coluna(coluna):
+    # see Sec 4.1.2 in The Design of Rijndael
+    t = coluna[0] ^ coluna[1] ^ coluna[2] ^ coluna[3]
+    u = coluna[0]
+    coluna[0] ^= t ^ xtime(coluna[0] ^ coluna[1])
+    coluna[1] ^= t ^ xtime(coluna[1] ^ coluna[2])
+    coluna[2] ^= t ^ xtime(coluna[2] ^ coluna[3])
+    coluna[3] ^= t ^ xtime(coluna[3] ^ u)
 
 
-# def expansao_chave(chave):
+
+def mix_colunas(matriz):
+    for i in range(4):
+        mix_uma_coluna(matriz[i])
+    return matriz
+# ---------------------------------------------------------------------
 
 
 
+# por enquanto so usei pra visualizacao mas acho q vai ser util
+def int_para_hex(lista):
+    lista_hex = []
+    for elem in lista:
+        lista_hex.append(hex(elem))
+    return lista_hex
 
+
+
+def cifra_AES(msg):
+
+    # manipulacao da msg -----------------------------------
+    mas_c_padding = msg_padding(msg.encode())
+    print('\nMENSAGEM COM PADDING: ', mas_c_padding)
+
+    blocos = msg_em_blocos(mas_c_padding)
+    print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
+
+    # AQUI TO CONSIDERANDO QUE SO TEM UM BLOCO
+    for bloco in blocos:
+        bloco1_msg = vetor_para_matriz(bloco)
+        print('\nMATRIZ: ', bloco1_msg)
+    # end - manipulacao da msg -------------------------------
+    
+
+    # manipulacao chave -----------------------------------
+    chave = gera_chave()
+    print('CHAVE: ', chave)
+
+    chave_matriz = vetor_para_matriz(chave.encode())
+
+    # end - manipulacao chave -------------------------------
+
+    chave_expandida = expansao_chave(chave_matriz, 0) # nao sei bem se aqui comeca do 0 ou 1
+    msg_xor_chave = xor_matrizes(bloco1_msg, chave_expandida)
+
+    # AQUI COMECA OS ROUNDS
+    for round in range(1, 9): 
+
+
+        msg_subs = np.zeros((4, 4))
+        for i in range(4):
+            msg_subs[i] = byte_substituicao(msg_xor_chave[i])
+
+        msg_shift = row_shift(msg_subs.astype(int))
+
+        msg_mix = mix_colunas(msg_shift)
+
+        chave_expandida = expansao_chave(chave_matriz, round)
+        msg_xor_chave = xor_matrizes(msg_mix, chave_expandida)
+
+
+    # ULTIMO ROUND NAO TEM MIX COLUMNS
+    msg_subs = np.zeros((4, 4))
+    for i in range(4):
+        msg_subs[i] = byte_substituicao(msg_xor_chave[i])
+
+    msg_shift = row_shift(msg_subs.astype(int))
+
+    chave_expandida = expansao_chave(chave_matriz, round)
+    msg_xor_chave = xor_matrizes(msg_shift, chave_expandida)
+
+    return msg_xor_chave
 
 
 # TESTES -------------------------------------------------------------------
 
-chave = gera_chave()
-print('CHAVE: ', chave)
+# IMPORTANTE 
+# cada vetor printado representa uma COLUNA  e nao uma lINHA 
 
-msg = "marina joana rafael fernanda lucas bla bla "
-mas_c_padding = msg_padding(msg.encode())
-print('\nMENSAGEM COM PADDING: ', mas_c_padding)
+# chave = gera_chave()
+# print('CHAVE: ', chave)
 
-blocos = msg_em_blocos(mas_c_padding)
-print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
+# msg = "marina bla bla "
+# mas_c_padding = msg_padding(msg.encode())
+# print('\nMENSAGEM COM PADDING: ', mas_c_padding)
 
-for bloco in blocos:
-    print('\nMATRIZ: ', vetor_para_matriz(bloco))
+# blocos = msg_em_blocos(mas_c_padding)
+# print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
 
-chave_matriz = vetor_para_matriz(chave.encode())
-print('\nCHAVE EM MATRIZ: ', chave_matriz)
+# for bloco in blocos:
+#     bloco1_msg = vetor_para_matriz(bloco)
+#     print('\nMATRIZ: ', bloco1_msg)
 
+# chave_matriz = vetor_para_matriz(chave.encode())
+# print('\nCHAVE EM MATRIZ: ', chave_matriz)
+
+# chave_expandida = expansao_chave(chave_matriz, 1)
+# print('\nCHAVE EXPANDIDA: ', chave_expandida)
+
+
+# msg_xor_chave = xor_matrizes(bloco1_msg, chave_expandida)
+# print('\nMSG XOR CHAVE: ', msg_xor_chave)
+
+# msg_subs = np.zeros((4, 4))
+# for i in range(4):
+#     msg_subs[i] = byte_substituicao(msg_xor_chave[i])
+# print('\nSUBSTITUICAO BYTE: ', msg_subs)
+
+
+# msg_shift = row_shift(msg_subs.astype(int))
+# print('\nROW SHIFT: ', msg_shift)
+
+# msg_mix = mix_colunas(msg_shift)
+# print('\nMIX COLUNAS: ', msg_mix)
+
+
+cifrada = cifra_AES("marina linda")
+print('\nCIFRADA: ', cifrada)
