@@ -163,38 +163,6 @@ def xor_colunas(coluna1, coluna2):
         colunas_xor.append(coluna1[i] ^ coluna2[i])
     return colunas_xor
 
-# Pensar depois
-def expansao_chave(chave, round):
-    #realiza a expansao da chave
-
-    chave_expandida = np.zeros((4, 4))
-    ultima_coluna = chave[:, 3]
-    # print('\nULTIMA COLUNA: ', ultima_coluna_chave)
-    
-
-    coluna_shifted = coluna_shift(ultima_coluna)
-    # print('\nSHIFT NA COLUNA: ', coluna_shifted)
-
-    sub_coluna = byte_substituicao(coluna_shifted)
-    # print('\nCOLUNA SBOX: ', sub_coluna)
-
-    coluna_rcon = add_rcon(sub_coluna, round)
-    # print('COLUNA RCON: ', coluna_rcon)
-
-    # xor das colunas
-    coluna0 = xor_colunas(coluna_rcon, chave[:, 0])
-    coluna1 = xor_colunas(coluna0, chave[:, 1])
-    coluna2 = xor_colunas(coluna1, chave[:, 2])
-    coluna3 = xor_colunas(coluna2,  chave[:, 3])
-
-    chave_expandida[:, 0] = coluna0
-    chave_expandida[:, 1] = coluna1
-    chave_expandida[:, 2] = coluna2
-    chave_expandida[:, 3] = coluna3
-
-    return chave_expandida.astype(int)
-
-
 # -------------------------------------------------------------------
 
 def expansao_chave(chave):
@@ -205,8 +173,6 @@ def expansao_chave(chave):
     chave_expandida[0, :, :] = chave.copy()
     for i in range(1, 11):
         ultima_coluna = chave_expandida[i-1, :, 3].copy()
-        print('\n')
-        printGreen(ultima_coluna)
 
         coluna_shifted = coluna_shift(ultima_coluna)
         # print('\nSHIFT NA COLUNA: ', coluna_shifted)
@@ -228,10 +194,7 @@ def expansao_chave(chave):
         chave_expandida[i, :, 2] = coluna2
         chave_expandida[i, :, 3] = coluna3
 
-    printBlue(chave_expandida)
-    input()
-
-    return chave_expandida.astype(int)
+    return chave_expandida
 
 # -------------------------------------------------------------------
 
@@ -412,7 +375,7 @@ def decifra_AES2(msg_cifrada, chave_matriz):
 
     # ADD ROUND KEY
     chave_expandida = expansao_chave(chave_matriz)
-    msg_xor_chave = xor_matrizes(msg_cifrada, chave_expandida)
+    msg_xor_chave = xor_matrizes(msg_cifrada, chave_expandida[10, :, :])
 
     # INV SHIFT
     inv_shift = inv_row_shift(msg_xor_chave)
@@ -425,8 +388,7 @@ def decifra_AES2(msg_cifrada, chave_matriz):
     # ROUNDS
     for round in range(9,0,-1):
         # ADD ROUND KEY
-        chave_expandida = expansao_chave(chave_matriz, round)
-        msg_xor_chave = xor_matrizes(inv_sub, chave_expandida)
+        msg_xor_chave = xor_matrizes(inv_sub, chave_expandida[round, :, :])
         
         # INV MIX COLUMNS
         mix_msg = inv_mix_colunas(msg_xor_chave)
