@@ -76,20 +76,20 @@ def calcula_d(e, z):
 
 def cifraRSA(texto, display=False):
     p, q = gera_p_q()
-    if not display: print('p = ', p)
-    if not display: print('q = ', q)
+    if display: print('p = ', p)
+    if display: print('q = ', q)
 
     n = calcula_n(p, q)
-    if not display: print('n = ', n)
+    if display: print('n = ', n)
 
     z = calcula_z(p, q)
-    if not display: print('z = ', z)
+    if display: print('z = ', z)
 
     e = calcula_e(z)
-    if not display: print('e = ', e)
+    if display: print('e = ', e)
 
     d = calcula_d(e, z)
-    if not display: print('d = ', d)
+    if display: print('d = ', d)
     
     texto_cifrado = pow(Integer(texto), Integer(e), Integer(n))
     return texto_cifrado, d, n
