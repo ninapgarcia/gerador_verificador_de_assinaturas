@@ -1,7 +1,9 @@
 
+from operator import inv
 import random
 import string 
 import numpy as np
+from colors import *
 
 # LINK MT MT IMPORTANTE:
 # https://github.com/boppreh/aes/blob/master/aes.py
@@ -146,6 +148,11 @@ def byte_substituicao(coluna):
     sub_coluna = [SBOX[b] for b in coluna]
     return sub_coluna
 
+def inv_byte_substituicao(coluna):
+    sub_coluna = [INV_SBOX[b] for b in coluna]
+    return sub_coluna
+
+
 def add_rcon(coluna, round):
     coluna[0] = coluna[0] ^ RCON[round]
     return coluna
@@ -156,12 +163,14 @@ def xor_colunas(coluna1, coluna2):
         colunas_xor.append(coluna1[i] ^ coluna2[i])
     return colunas_xor
 
+# Pensar depois
 def expansao_chave(chave, round):
     #realiza a expansao da chave
 
     chave_expandida = np.zeros((4, 4))
     ultima_coluna = chave[:, 3]
     # print('\nULTIMA COLUNA: ', ultima_coluna_chave)
+    
 
     coluna_shifted = coluna_shift(ultima_coluna)
     # print('\nSHIFT NA COLUNA: ', coluna_shifted)
@@ -191,18 +200,31 @@ def xor_matrizes(matriz1, matriz2):
     for i in range(4):
         for j in range(4):
             result[i][j] = matriz1[i][j] ^ matriz2[i][j]
-            
+    
+    # print(result)
     return result.astype(int)
 
 def row_shift(matriz):
-    #linha 2
-    matriz[1][0], matriz[1][1], matriz[1][2], matriz[1][3] = matriz[1][1], matriz[1][2], matriz[1][3], matriz[1][0]
-    #linha 3
-    matriz[2][0], matriz[2][1], matriz[2][2], matriz[2][3] = matriz[2][1], matriz[2][2], matriz[2][3], matriz[2][0]
-    #linha 4
-    matriz[3][0], matriz[3][1], matriz[3][2], matriz[3][3] = matriz[3][1], matriz[3][2], matriz[3][3], matriz[3][0]
+    
+    nova_matriz = np.zeros((4,4), dtype=np.int64)
 
-    return matriz.astype(int)
+    nova_matriz[0] = np.roll(matriz[0], 0)
+    nova_matriz[1] = np.roll(matriz[1], -1)
+    nova_matriz[2] = np.roll(matriz[2], -2)
+    nova_matriz[3] = np.roll(matriz[3], -3)
+
+    return nova_matriz.astype(int)
+
+def inv_row_shift(matriz):
+    
+    nova_matriz = np.zeros((4,4), dtype=np.int64)
+
+    nova_matriz[0] = np.roll(matriz[0], 0)
+    nova_matriz[1] = np.roll(matriz[1], 1)
+    nova_matriz[2] = np.roll(matriz[2], 2)
+    nova_matriz[3] = np.roll(matriz[3], 3)
+
+    return nova_matriz.astype(int)
 
 # essa parte eu peguei do git do homi 
 # https://github.com/boppreh/aes/blob/master/aes.py
@@ -220,12 +242,28 @@ def mix_uma_coluna(coluna):
     coluna[2] ^= t ^ xtime(coluna[2] ^ coluna[3])
     coluna[3] ^= t ^ xtime(coluna[3] ^ u)
 
-
-
 def mix_colunas(matriz):
     for i in range(4):
         mix_uma_coluna(matriz[i])
     return matriz
+
+def inv_mix_colunas(matriz):
+    # see Sec 4.1.3 in The Design of Rijndael
+    for i in range(4):
+        u = xtime(xtime(matriz[i][0] ^ matriz[i][2]))
+        v = xtime(xtime(matriz[i][1] ^ matriz[i][3]))
+        matriz[i][0] ^= u
+        matriz[i][1] ^= v
+        matriz[i][2] ^= u
+        matriz[i][3] ^= v
+    
+    # mix_colunas(matriz)
+
+    return matriz
+# def inv_mix_colunas(matriz):
+#     for i in range(4):
+#         inv_mix_uma_colunas(matriz[i])
+#     return matriz
 # ---------------------------------------------------------------------
 
 
@@ -264,12 +302,11 @@ def cifra_AES(msg):
     # end - manipulacao chave -------------------------------
 
     chave_expandida = expansao_chave(chave_matriz, 0) # nao sei bem se aqui comeca do 0 ou 1
+    
     msg_xor_chave = xor_matrizes(bloco1_msg, chave_expandida)
 
-    # AQUI COMECA OS ROUNDS
-    for round in range(1, 9): 
-
-
+    # AQUI COMECAM OS ROUNDS
+    for round in range(1, 10): 
         msg_subs = np.zeros((4, 4))
         for i in range(4):
             msg_subs[i] = byte_substituicao(msg_xor_chave[i])
@@ -281,19 +318,94 @@ def cifra_AES(msg):
         chave_expandida = expansao_chave(chave_matriz, round)
         msg_xor_chave = xor_matrizes(msg_mix, chave_expandida)
 
-
     # ULTIMO ROUND NAO TEM MIX COLUMNS
     msg_subs = np.zeros((4, 4))
     for i in range(4):
         msg_subs[i] = byte_substituicao(msg_xor_chave[i])
 
+    # SHIFT
     msg_shift = row_shift(msg_subs.astype(int))
-
-    chave_expandida = expansao_chave(chave_matriz, round)
+    
+    # ADD ROUND KEY
+    chave_expandida = expansao_chave(chave_matriz, 10)
+    printRed(chave_expandida)
     msg_xor_chave = xor_matrizes(msg_shift, chave_expandida)
+
+    return msg_xor_chave, chave_matriz
+
+
+def decifra_AES(msg_cifrada, chave_matriz):
+    # ADD ROUND KEY
+    chave_expandida = expansao_chave(chave_matriz, 10)
+    printRed(chave_expandida)
+    msg_xor_chave = xor_matrizes(msg_cifrada, chave_expandida)
+
+    for round in range(9,0,-1):
+        # INV SHIFT
+        inv_shift = inv_row_shift(msg_xor_chave)
+
+        # INV SUB
+        inv_sub = np.zeros((4,4), dtype=np.int64)
+        for i in range(4):
+            inv_sub[i] = inv_byte_substituicao(inv_shift[i])
+
+        # ADD ROUND KEY
+        chave_expandida = expansao_chave(chave_matriz, round)
+        msg_xor_chave = xor_matrizes(inv_sub, chave_expandida)
+
+        # INV MIX COLUMNS
+        mix_msg = inv_mix_colunas(msg_xor_chave)
+        msg_xor_chave = mix_msg.copy()
+    
+    inv_shift = inv_row_shift(msg_xor_chave)
+
+    inv_sub = np.zeros((4,4), dtype=np.int64)
+    for i in range(4):
+        inv_sub[i] = inv_byte_substituicao(inv_shift[i])
+
+    chave_expandida = expansao_chave(chave_matriz, 0)
+    msg_xor_chave = xor_matrizes(inv_sub, chave_expandida)
 
     return msg_xor_chave
 
+def decifra_AES2(msg_cifrada, chave_matriz):
+
+    # ADD ROUND KEY
+    chave_expandida = expansao_chave(chave_matriz, 10)
+    msg_xor_chave = xor_matrizes(msg_cifrada, chave_expandida)
+
+    # INV SHIFT
+    inv_shift = inv_row_shift(msg_xor_chave)
+
+    # INV SUB
+    inv_sub = np.zeros((4,4), dtype=np.int64)
+    for i in range(4):
+        inv_sub[i] = inv_byte_substituicao(inv_shift[i])
+    
+    # ROUNDS
+    for round in range(9,0,-1):
+        # ADD ROUND KEY
+        chave_expandida = expansao_chave(chave_matriz, round)
+        msg_xor_chave = xor_matrizes(inv_sub, chave_expandida)
+        
+        # INV MIX COLUMNS
+        mix_msg = inv_mix_colunas(msg_xor_chave)
+
+        # INV ROW SHIFT
+        inv_shift = inv_row_shift(mix_msg)
+        
+        # INV SHIFT BYTES
+        inv_sub = np.zeros((4,4), dtype=np.int64)
+        for i in range(4):
+            inv_sub[i] = inv_byte_substituicao(inv_shift[i])
+
+        msg_xor_chave = inv_sub.copy()
+    
+    # PRIMEIRO ROUND
+    chave_expandida = expansao_chave(chave_matriz, 0)
+    msg_xor_chave = xor_matrizes(msg_xor_chave, chave_expandida)
+
+    return msg_xor_chave
 
 # TESTES -------------------------------------------------------------------
 
@@ -337,5 +449,10 @@ def cifra_AES(msg):
 # print('\nMIX COLUNAS: ', msg_mix)
 
 
-cifrada = cifra_AES("marina linda")
+cifrada, chave_matriz = cifra_AES("marina linda")
+
 print('\nCIFRADA: ', cifrada)
+
+decifrada = decifra_AES(cifrada, chave_matriz)
+
+print('\nDECIFRADA: ', decifrada)

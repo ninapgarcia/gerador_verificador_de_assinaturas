@@ -21,3 +21,10 @@ def printGreen(textos):
         print_string += (str(x)+" ")
     print_string = print_string[:-1]
     print(GREEN, print_string, RESET)
+
+def printRed(textos):
+    print_string = ""
+    for x in textos:
+        print_string += (str(x)+" ")
+    print_string = print_string[:-1]
+    print(RED, print_string, RESET)
