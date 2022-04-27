@@ -106,10 +106,22 @@ RCON = (
     0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
 )
 
+
+def gera_nonce():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8)) #64 bits
+    # return random.randbytes(8)
+
+def pad_contador(contador):
+    contador = str(contador)
+    while len(contador) < 8:
+        contador = '0' + contador
+    return contador
+
+def nonce_e_contador(nonce, contador):
+    return nonce + contador 
+
 def gera_chave():
-    #talvez seja so qualquer coisa segundo o mateusinho
-    # vamo usar 128 bits pq n sei usar as outras
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=16)) #128 bits
 
 
 def msg_padding(msg):
@@ -163,8 +175,6 @@ def xor_colunas(coluna1, coluna2):
         colunas_xor.append(coluna1[i] ^ coluna2[i])
     return colunas_xor
 
-# -------------------------------------------------------------------
-
 def expansao_chave(chave):
     #realiza a expansao da chave
 
@@ -196,7 +206,6 @@ def expansao_chave(chave):
 
     return chave_expandida
 
-# -------------------------------------------------------------------
 
 def xor_matrizes(matriz1, matriz2):
     # xor de duas matrizes elemento a elemento
@@ -284,10 +293,10 @@ def int_para_hex(lista):
 def cifra_AES(msg):
 
     # manipulacao da msg -----------------------------------
-    mas_c_padding = msg_padding(msg.encode())
-    print('\nMENSAGEM COM PADDING: ', mas_c_padding)
+    # mas_c_padding = msg_padding(msg.encode())
+    # print('\nMENSAGEM COM PADDING: ', mas_c_padding)
 
-    blocos = msg_em_blocos(mas_c_padding)
+    blocos = msg_em_blocos(msg)
     print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', blocos)
 
     # AQUI TO CONSIDERANDO QUE SO TEM UM BLOCO
@@ -370,7 +379,7 @@ def cifra_AES(msg):
     # printRed(msg_xor_chave)
     count +=1
     
-    
+
     return msg_xor_chave, chave_matriz
 
 
@@ -531,13 +540,16 @@ def decifra_AES2(msg_cifrada, chave_matriz):
 # print('\nMIX COLUNAS: ', msg_mix)
 
 
-cifrada, chave_matriz = cifra_AES("marina linda")
 
-print('\nCIFRADA: \n', cifrada)
 
-decifrada = decifra_AES(cifrada, chave_matriz)
 
-print('\nDECIFRADA: \n', decifrada)
+# cifrada, chave_matriz = cifra_AES("marina linda")
+
+# print('\nCIFRADA: \n', cifrada)
+
+# decifrada = decifra_AES(cifrada, chave_matriz)
+
+# print('\nDECIFRADA: \n', decifrada)
 
 # printGreen(cifrada)
 # printGreen(inv_mix_colunas(mix_colunas(cifrada)))
