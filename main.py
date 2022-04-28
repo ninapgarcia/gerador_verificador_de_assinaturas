@@ -48,10 +48,4 @@ print('\nMSG: \n', np.matrix.flatten(bloco_msg))
 print('\nCIFRADA: \n', cifrada)
 print('\nDECIFRADA BLOCOS: \n', decifrada)
 
-# Tirar isso da main acho que vai pra dentro de decifra mesmo ...
-blocos = divide_blocos(decifrada)
-msg_texto_final = ""
-for x in range(len(blocos)):
-    bloco_vetores = [list(blocos[x][i:i+4]) for i in range(0, len(blocos[x]), 4)]
-    msg_texto_final += bytes(list(np.matrix.flatten(np.array(bloco_vetores).T))).decode()
-print("DECIFRADA TEXTO: ", msg_texto_final)
+print("DECIFRADA TEXTO: ", blocos_de_matriz_para_texto(decifrada))

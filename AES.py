@@ -228,6 +228,13 @@ def int_para_hex(lista):
         lista_hex.append(hex(elem))
     return lista_hex
 
+def blocos_de_matriz_para_texto(matrizes):
+    blocos = divide_blocos(matrizes)
+    msg_texto_final = ""
+    for x in range(len(blocos)):
+        bloco_vetores = [list(blocos[x][i:i+4]) for i in range(0, len(blocos[x]), 4)]
+        msg_texto_final += bytes(list(np.matrix.flatten(np.array(bloco_vetores).T))).decode()
+    return msg_texto_final
 
 
 def AES(nonce_contador, chave):
