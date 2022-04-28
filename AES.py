@@ -78,10 +78,12 @@ def gera_chave():
 
 def msg_padding(msg):
     # msg já é passada encoded
+    print(msg)
     if len(msg) % 16 != 0:
         padding_len = 16 - (len(msg) % 16)
-        padding = bytes([padding_len] * padding_len)
-        return msg + padding
+        padding = bytes([0] * padding_len)
+        print("Padding: ", padding)
+        return padding + msg
 
 def divide_blocos(message):
     # divide a msg em blocos de 16 bytes
@@ -89,6 +91,7 @@ def divide_blocos(message):
     return blocos
 
 def vetor_para_matriz(msg):
+    print("msg: ", msg)
     # transforma o vetor de 16 bytes em uma matriz 4x4 a cada 4 do vetor vira uma COLUNA
     bloco_vetores = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
     bloco_matriz = np.zeros((4, 4))
@@ -96,6 +99,8 @@ def vetor_para_matriz(msg):
     bloco_matriz[:, 1] = bloco_vetores[1]
     bloco_matriz[:, 2] = bloco_vetores[2]
     bloco_matriz[:, 3] = bloco_vetores[3]
+
+    print("vt_pr_matriz: ", bloco_matriz)
     return bloco_matriz.astype(int)
 
 def coluna_shift(coluna):

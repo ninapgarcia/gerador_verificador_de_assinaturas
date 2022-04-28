@@ -34,12 +34,9 @@ nonce = gera_nonce().encode()
 print('NONCE: ', nonce)
 
 msg = "meu texto "
-
-
 print("\n-----------------------------------------------------------")
 
 chave = gera_chave()
-
 cifrada, chave, bloco_msg = cifra(msg, nonce, chave)
 decifrada = decifra(cifrada, nonce, chave)
 
@@ -50,6 +47,14 @@ print("\n-----------------------------------------------------------")
 print('\nMSG: \n', np.matrix.flatten(bloco_msg))
 print('\nCIFRADA: \n', cifrada)
 print('\nDECIFRADA: \n', decifrada)
+
+# Destransforma colunas para linhas
+
+print(decifrada)
+bloco_vetores = [list(decifrada[i:i+4]) for i in range(0, len(decifrada), 4)]
+
+oi = bytes(list(np.matrix.flatten(np.array(bloco_vetores).T))).decode()
+print(oi)
 
 
 
