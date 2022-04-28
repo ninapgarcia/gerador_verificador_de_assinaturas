@@ -33,7 +33,7 @@ print("\n-----------------------------------------------------------")
 nonce = gera_nonce().encode()
 print('NONCE: ', nonce)
 
-msg = "meu texto "
+msg = "meu texto com 2 blocos"
 print("\n-----------------------------------------------------------")
 
 chave = gera_chave()
@@ -46,18 +46,12 @@ print("\n-----------------------------------------------------------")
 
 print('\nMSG: \n', np.matrix.flatten(bloco_msg))
 print('\nCIFRADA: \n', cifrada)
-print('\nDECIFRADA: \n', decifrada)
+print('\nDECIFRADA BLOCOS: \n', decifrada)
 
-# Destransforma colunas para linhas
-
-print(decifrada)
-bloco_vetores = [list(decifrada[i:i+4]) for i in range(0, len(decifrada), 4)]
-
-oi = bytes(list(np.matrix.flatten(np.array(bloco_vetores).T))).decode()
-print(oi)
-
-
-
-# decifrada = decifra_AES(cifrada, chave_matriz)
-
-# print('\nDECIFRADA: \n', decifrada)
+# Tirar isso da main acho que vai pra dentro de decifra mesmo ...
+blocos = divide_blocos(decifrada)
+msg_texto_final = ""
+for x in range(len(blocos)):
+    bloco_vetores = [list(blocos[x][i:i+4]) for i in range(0, len(blocos[x]), 4)]
+    msg_texto_final += bytes(list(np.matrix.flatten(np.array(bloco_vetores).T))).decode()
+print("DECIFRADA TEXTO: ", msg_texto_final)
