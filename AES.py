@@ -82,7 +82,7 @@ def msg_padding(msg):
     if len(msg) % 16 != 0:
         padding_len = 16 - (len(msg) % 16)
         padding = bytes([0] * padding_len)
-        print("Padding: ", padding)
+        # print("Padding: ", padding)
         return padding + msg
 
 def divide_blocos(message):
@@ -91,7 +91,7 @@ def divide_blocos(message):
     return blocos
 
 def vetor_para_matriz(msg):
-    print("msg: ", msg)
+    # print("msg: ", msg)
     # transforma o vetor de 16 bytes em uma matriz 4x4 a cada 4 do vetor vira uma COLUNA
     bloco_vetores = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
     bloco_matriz = np.zeros((4, 4))
@@ -100,7 +100,7 @@ def vetor_para_matriz(msg):
     bloco_matriz[:, 2] = bloco_vetores[2]
     bloco_matriz[:, 3] = bloco_vetores[3]
 
-    print("vt_pr_matriz: ", bloco_matriz)
+    # print("vt_pr_matriz: ", bloco_matriz)
     return bloco_matriz.astype(int)
 
 def coluna_shift(coluna):
@@ -230,10 +230,13 @@ def int_para_hex(lista):
 
 def blocos_de_matriz_para_texto(matrizes):
     blocos = divide_blocos(matrizes)
+    print("Blocos: ", blocos)
     msg_texto_final = ""
     for x in range(len(blocos)):
         bloco_vetores = [list(blocos[x][i:i+4]) for i in range(0, len(blocos[x]), 4)]
-        msg_texto_final += bytes(list(np.matrix.flatten(np.array(bloco_vetores).T))).decode()
+        bytes_msg = bytes(list(np.matrix.flatten(np.array(bloco_vetores).T)))
+        print(bytes_msg)
+        msg_texto_final += bytes_msg.decode()
     return msg_texto_final
 
 
@@ -280,77 +283,78 @@ def cifra(msg, nonce, chave):
     print("\n CIFRA  -----------------------------------------------------------")
 
     msg_c_padding = msg_padding(msg.encode())
-    print('\nMENSAGEM COM PADDING: ', msg_c_padding)
+    # print('\nMENSAGEM COM PADDING: ', msg_c_padding)
 
     msg_blocos = divide_blocos(msg_c_padding)
-    print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
+    # print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
 
     msg_cifrada = []
 
     #percorre os blocos da mensagem
     for i in range(len(msg_blocos)):
         bloco_msg = vetor_para_matriz(msg_blocos[i])
-        print('\nMATRIZ BLOCO MSG: \n', bloco_msg)
+        # print('\nMATRIZ BLOCO MSG: \n', bloco_msg)
     
         contador = pad_contador(i).encode()
-        print('CONTADOR: ', contador)
+        # print('CONTADOR: ', contador)
 
         nonce_contador = nonce_e_contador(nonce, contador)
-        print('NONCE + CONTADOR: ', nonce_contador)
+        # print('NONCE + CONTADOR: ', nonce_contador)
 
-        print('\nCHAVE: ', chave)
+        # print('\nCHAVE: ', chave)
         nonce_aes = AES(nonce_contador, chave)
-        print('\nNONCE AES CIFRA: \n', nonce_aes)
+        # print('\nNONCE AES CIFRA: \n', nonce_aes)
 
 
         bloco_cifrado = xor_matrizes(nonce_aes, bloco_msg) 
-        print('\nBLOCO CIFRADO: ', bloco_cifrado)
+        # print('\nBLOCO CIFRADO: ', bloco_cifrado)
 
         bloco_cifrado = np.matrix.flatten(bloco_cifrado)
-        print('\nBLOCO CIFRADO VETOR: ', bloco_cifrado)
+        # print('\nBLOCO CIFRADO VETOR: ', bloco_cifrado)
 
         msg_cifrada = np.append(msg_cifrada, bloco_cifrado)
-        print('\nMENSAGEM CIFRADA:  ', bloco_cifrado)
+        # print('\nMENSAGEM CIFRADA:  ', bloco_cifrado)
 
 
         
-    return msg_cifrada.astype(int), chave, bloco_msg
+    return msg_cifrada.astype(int), chave
 
 
 
 
 def decifra(msg_cifrada, nonce, chave):
-    print("\n DECIFRA  -----------------------------------------------------------")
+    # print("\n DECIFRA  -----------------------------------------------------------")
 
     msg_blocos = divide_blocos(msg_cifrada)
-    print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
+    # print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
 
     msg_decifrada = []
 
     #percorre os blocos da mensagem
     for i in range(len(msg_blocos)):
         bloco_msg = msg_blocos[i].reshape((4, 4))
-        print('\nMATRIZ BLOCO MSG: \n', bloco_msg)
+        # print('\nMATRIZ BLOCO MSG: \n', bloco_msg)
     
         contador = pad_contador(i).encode()
-        print('CONTADOR: ', contador)
+        # print('CONTADOR: ', contador)
 
         nonce_contador = nonce_e_contador(nonce, contador)
-        print('NONCE + CONTADOR: ', nonce_contador)
+        # print('NONCE + CONTADOR: ', nonce_contador)
 
-        print('\nCHAVE: ', chave)
+        # print('\nCHAVE: ', chave)
         nonce_aes = AES(nonce_contador, chave)
-        print('\nNONCE AES DECIFRA: \n', nonce_aes)
+        # print('\nNONCE AES DECIFRA: \n', nonce_aes)
 
         bloco_decifrado = xor_matrizes(bloco_msg, nonce_aes) 
-        print('\nBLOCO DECIFRADO: ', bloco_decifrado)
+        # print('\nBLOCO DECIFRADO: ', bloco_decifrado)
 
         bloco_decifrado = np.matrix.flatten(bloco_decifrado)
-        print('\nBLOCO DECIFRADO VETOR: ', bloco_decifrado)
+        # print('\nBLOCO DECIFRADO VETOR: ', bloco_decifrado)
 
         msg_decifrada = np.append(msg_decifrada, bloco_decifrado)
-        
-    return msg_decifrada.astype(int)
+    
+    print("Mesg: ", msg_decifrada)
+    return blocos_de_matriz_para_texto(msg_decifrada.astype(int))
 
 
 

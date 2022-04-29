@@ -61,7 +61,7 @@ Para decifrar:
 """
 
 # numero de bits m e k
-BITS_M = 128
+BITS_M = 512
 BITS_K = 32
 
 def calcula_bits(texto):
@@ -79,7 +79,7 @@ def bits_to_string(string_bits):
 
 def padding(texto):
     string_bits = string_to_bits(texto)
-    m = string_bits.rjust(BITS_M, '0') #nao sei bem se isso faz sentido mas acho que faz
+    m = string_bits.rjust(BITS_M, '0') # nao sei bem se isso faz sentido mas acho que faz
     return m
 
 def gera_aleatorio():
@@ -95,7 +95,7 @@ def converte_int_to_bit_string(num, bit_len=BITS_M):
 def i2osp(integer: int, size: int = 4) -> str:
     return b"".join([chr((integer >> (8 * i)) & 0xFF).encode() for i in reversed(range(size))])
 
-def mgf1(input_str: bytes, length: int, hash_func=hashlib.sha3) -> str: # Não testei com SHA3 ainda ...
+def mgf1(input_str: bytes, length: int, hash_func=hashlib.sha1) -> str: # Não testei com SHA3 ainda ...
     """Mask generation function."""
     counter = 0
     output = b""
@@ -119,14 +119,14 @@ def H(P1: int):
     return P1_masked_int
 
 # agora precisa fazer as funcoes G e H q nao entendi como sao 
-def cifra_OAEP(texto):
+def cifra_OAEP(texto, e, n):
     m = padding(texto)
 
-    print("Inicial: ", m)
+    # print("Inicial: ", m)
 
     r = gera_aleatorio()
 
-    print("R: ", r)
+    # print("R: ", r)
 
     # Calculando P1 
     P1 = converte_bit_string_to_int(m) ^ G(r)
@@ -137,8 +137,8 @@ def cifra_OAEP(texto):
     P = converte_int_to_bit_string(P1, BITS_M) + converte_int_to_bit_string(P2, BITS_K)
 
     P_int = int(P, 2)
-    printBlue([P_int])
-    return cifraRSA(P_int)
+    # printBlue([P_int])
+    return cifraRSA(P_int, e, n)
     
 def decifra_OAEP(texto_cifrado,d, n):
     texto_decifradoRSA = decifraRSA(texto_cifrado, d, n)

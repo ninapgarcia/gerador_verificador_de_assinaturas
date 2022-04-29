@@ -74,7 +74,15 @@ def calcula_e(z):
 def calcula_d(e, z):
     return pow(e, -1, z)
 
-def cifraRSA(texto, display=False):
+def geraChavesRSA(display=False):
+    """
+    Args:
+
+    Returns:
+        e: chave pública expoente
+        n: chave pública multiplo de primos
+        d: chave privada inverso multiplicativo
+    """
     p, q = gera_p_q()
     if display: print('p = ', p)
     if display: print('q = ', q)
@@ -91,8 +99,11 @@ def cifraRSA(texto, display=False):
     d = calcula_d(e, z)
     if display: print('d = ', d)
     
+    return e, n, d
+
+def cifraRSA(texto, e, n):
     texto_cifrado = pow(Integer(texto), Integer(e), Integer(n))
-    return texto_cifrado, d, n
+    return texto_cifrado
 
 def decifraRSA(texto_cifrado, d, n):
     texto = pow(Integer(texto_cifrado), Integer(d), Integer(n))

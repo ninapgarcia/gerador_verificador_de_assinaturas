@@ -33,18 +33,20 @@ print("\n-----------------------------------------------------------")
 nonce = gera_nonce().encode()
 print('NONCE: ', nonce)
 
-msg = "meu texto com 2 blocos"
+msg = """
+    msg muito braba e secreta
+"""
 print("\n-----------------------------------------------------------")
 
 chave = gera_chave()
-cifrada, chave, bloco_msg = cifra(msg, nonce, chave)
+cifrada, chave = cifra(msg, nonce, chave)
 decifrada = decifra(cifrada, nonce, chave)
 
 # cifrada = AES(nonce_contador, chave)
 
 print("\n-----------------------------------------------------------")
 
-print('\nMSG: \n', np.matrix.flatten(bloco_msg))
+# print('\nMSG: \n', np.matrix.flatten(bloco_msg))
 print('\nCIFRADA: \n', cifrada)
 print('\nDECIFRADA BLOCOS: \n', decifrada)
 
