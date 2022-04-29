@@ -1,53 +1,57 @@
-# from  OEAP import *
-# from RSA import *
+from  OAEP import *
+from RSA import *
 from colors import *
 from AES import *
-import numpy as np
+import hashlib
 
-# print(gera_primo(1024))
+print('\n\n---------------- GERADOR VERIFICADOR DE ASSINATURAS ----------------\n')
 
-# texto = 12973183183831987398127319827319873981733
-# print("Original: ", texto)
-
-# texto_cifrado, d, n = cifraRSA(texto)
-# print("Cifrado: ", texto_cifrado)
-
-# texto = decifraRSA(texto_cifrado, d, n)
-# print("Decifrado: ", texto)
-
-# print("---------------------------------------------------")
-
-# texto_original = '512348' 
-# print(BLUE, "ORIGINAL: \t", RESET , texto_original)
-
-# texto_cifrado, d, n = cifra_OAEP(texto_original)
-# print(BLUE, "CIFRADO OEAP: \t", RESET, texto_cifrado)
-
-# texto_decifrado = decifra_OAEP(texto_cifrado, d, n)
-# print(BLUE, "FINAL: \t", RESET,texto_decifrado)
+msg = "msg muito braba e secreta maior ainda vai dar bom SUPER TEXTO GIGANTEW DE MAIS DE 128 BITS LALALALALALLA lsjfjsdlfjsjdf texto grande "
 
 
-print("\n-----------------------------------------------------------")
+# Geração de chaves
+print('\n -> Gerando chaves RSA ...')
+chave_pub_e, chave_pub_n, chave_priv_d = geraChavesRSA()
+print('\n -> Geradas as chaves (e, n) e (d, n)')
 
-
+chave_k = gera_chave()
 nonce = gera_nonce().encode()
-print('NONCE: ', nonce)
 
-msg = """
-    msg muito braba e secreta
-"""
-print("\n-----------------------------------------------------------")
+print(CYAN, '\n CHAVE K = ', RESET, chave_k)
 
-chave = gera_chave()
-cifrada, chave = cifra(msg, nonce, chave)
+print(CYAN, '\n MENSAGEM A SER CIFRADA:', RESET)
+print(' -> ', msg)
+
+# Segundo bloco
+print('\n -> Gerando hash da mensagem original ...')
+msg_hash = hashlib.sha3_256(msg.encode()).hexdigest()
+print('\n -> Cifrando hash com OAEP ...')
+hash_cifrado = cifra_OAEP(msg_hash, chave_pub_e, chave_pub_n)
+
+# Terceiro bloco
+print('\n -> Cifrando mensagem com AES ...')
+cifrada, chave = cifra(msg, nonce, chave_k)
+print('\n -> Cifrando chave k com OAEP ...')
+chave_k_cifrada = cifra_OAEP(chave_k, chave_pub_e, chave_pub_n)
+
+print(CYAN, '\n MENSAGEM CIFRADA (bytes):', RESET)
+print(' -> ', cifrada)
+
+# Quarto bloco - A pessoa que recebeu as informações
+print('\n -> Decifrando hash ...')
+hash_decifrado = decifra_OAEP(hash_cifrado, chave_priv_d, chave_pub_n)
+
+# Essa chave decifrada ainda esta com tamanho diferente mas ta funcionando k
+print('\n -> Decifrando chave k ...')
+chave_k_decifrada = decifra_OAEP(chave_k_cifrada, chave_priv_d, chave_pub_n)
+
+print('\n -> Decifrando mensagem ...')
 decifrada = decifra(cifrada, nonce, chave)
 
-# cifrada = AES(nonce_contador, chave)
+print('\n -> Gerando hash da mensagem decifrada ...')
+msg_decifrada_hash = hashlib.sha3_256(decifrada.encode()).hexdigest()
 
-print("\n-----------------------------------------------------------")
 
-# print('\nMSG: \n', np.matrix.flatten(bloco_msg))
-print('\nCIFRADA: \n', cifrada)
-print('\nDECIFRADA BLOCOS: \n', decifrada)
-
-print("DECIFRADA TEXTO: ", blocos_de_matriz_para_texto(decifrada))
+print(CYAN, '\n HASH DA MENSAGEM ORIGINAL:  ', RESET, msg_decifrada_hash)
+print(CYAN, 'HASH DA MENSAGEM DECIFRADA: ', RESET,  msg_hash)
+if msg_decifrada_hash == msg_hash : print(GREEN, "\n\n -> SUCESSO !", RESET)

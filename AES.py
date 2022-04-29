@@ -78,7 +78,6 @@ def gera_chave():
 
 def msg_padding(msg):
     # msg já é passada encoded
-    print(msg)
     if len(msg) % 16 != 0:
         padding_len = 16 - (len(msg) % 16)
         padding = bytes([0] * padding_len)
@@ -230,13 +229,17 @@ def int_para_hex(lista):
 
 def blocos_de_matriz_para_texto(matrizes):
     blocos = divide_blocos(matrizes)
-    print("Blocos: ", blocos)
-    msg_texto_final = ""
+    msg_texto = ""
     for x in range(len(blocos)):
         bloco_vetores = [list(blocos[x][i:i+4]) for i in range(0, len(blocos[x]), 4)]
         bytes_msg = bytes(list(np.matrix.flatten(np.array(bloco_vetores).T)))
-        print(bytes_msg)
-        msg_texto_final += bytes_msg.decode()
+        msg_texto += bytes_msg.decode()
+    
+    msg_texto_final = ""
+    for x in msg_texto:
+        if ord(x) > 0:
+            msg_texto_final += x
+            
     return msg_texto_final
 
 
@@ -280,7 +283,6 @@ def AES(nonce_contador, chave):
 
 
 def cifra(msg, nonce, chave):
-    print("\n CIFRA  -----------------------------------------------------------")
 
     msg_c_padding = msg_padding(msg.encode())
     # print('\nMENSAGEM COM PADDING: ', msg_c_padding)
@@ -353,7 +355,6 @@ def decifra(msg_cifrada, nonce, chave):
 
         msg_decifrada = np.append(msg_decifrada, bloco_decifrado)
     
-    print("Mesg: ", msg_decifrada)
     return blocos_de_matriz_para_texto(msg_decifrada.astype(int))
 
 

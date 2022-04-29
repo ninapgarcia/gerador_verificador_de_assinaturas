@@ -4,61 +4,12 @@ import random
 from xml.etree.ElementTree import tostring
 from bitstring import BitStream, BitArray
 
-# Acelerando :)
-from Crypto.Math.Numbers import Integer
-
-from cryptography.hazmat.primitives import hashes
-
 from RSA import *
-
-import base64
-
 import hashlib
-
 from binascii import hexlify
-
 from colors import printBlue, printGreen
 
 
-
-"""
-Temos uma mensagem de menos de m bits
-Passos para realizar a cifra
-
-> padding para deixar a mensagem com m bits
-  esse padding pelo que entendi é adicionar zeros no final até completar (M)
-
-> gerar numero aleatório de k bits (r)
-
-> operação XOR com M e G(r) - G transforma k bits em m bits
-  isso gera P1
-
-> operacao XOR com H(P1) e r - H transforma m bits em k bits
-  isso gera P2
-
-> Juntar P1 e P2 (só um append normal pelo q entendi) (P)
-
-> Encriptar essa mensagem P usando RSA
-
-"""
-
-
-"""
-Para decifrar:
-
-> Decifrar com RSA (P)
-
-> Separar P em P1 e P2 (primeiros m bits são P1 e ultimos k bits são P2 acho)
-
-> Descobrir numero aleatorio r com P2 XOR H(P1)
-
-> Operação XOR com P1 e G(r) vira M
-
-> Tirar o padding
-
-> Mensagem decifrada 
-
-"""
 
 # numero de bits m e k
 BITS_M = 512
@@ -75,7 +26,13 @@ def string_to_bits(texto):
 def bits_to_string(string_bits):
     s_list = [string_bits[i:i+8] for i in range(0, len(string_bits), 8)]
     int_list = [int(x, 2) for x in s_list]
-    return "".join(chr(element) for element in int_list)
+    string = "".join(chr(element) for element in int_list)
+
+    string_final = ""
+    for x in string:
+        if ord(x) > 0:
+            string_final += x
+    return string_final
 
 def padding(texto):
     string_bits = string_to_bits(texto)
@@ -151,11 +108,8 @@ def decifra_OAEP(texto_cifrado,d, n):
 
     texto_decifrado = P1_int ^ G(r)
 
-    print("Final: ", converte_int_to_bit_string(texto_decifrado))
-
     return bits_to_string(converte_int_to_bit_string(texto_decifrado))
-    # Tem que tirar o padding agora -> tô dúvida como fazer isso
-    # Tipo, que valores a gente pode usar pra fazer isso
+
 
 
 
