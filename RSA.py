@@ -1,46 +1,52 @@
 import numpy as np
 import random
-
 from Crypto.Math.Numbers import Integer
+
+from colors import printRed
 
 # Inicializa gerador de números aleatorios do sistema operacional
 systemRandom = random.SystemRandom()
 
-def tem_divisor(valor, a):
-    """
-    Checa se um número é ou não primo
 
-    Args:
-        valor: número que será testado
-        a: NÃO SEI EXPLICAR DIREITO, MAS É PROVAVELMENTE O NÚMERO DE INTERAÇÕES
-    Returns:
-        booleano que representa se número é ou não primo
-    """
+# Checa se o valor é primo ou não para o valor a 
+def tem_divisor(valor, a):
     exp = valor - 1
 
+    # Enquanto o exponente for par -> queremos um expoente ímpar
     while not exp & 1:
-        exp >>= 1 # Bitwise right-shift
+        exp >>= 1 # Shift pra direita - Divide por 2 
 
+    # Testa se o expoente a^exp%1 == 1 # Retorna Verdadeiro 
     if pow(a, exp, valor) == 1:
         return True
 
+    # Testa se o expoente a^exp%1 == 1 # Retorna verdadeiro
     while exp < valor - 1:
         if pow(a, exp, valor) == valor-1:
             return True
-        exp <<= 1 # Bitwise left-shift 
+        exp <<= 1 # Shift pra esquerda - Multiplica exponte por 2 
 
-def miller_rabin(valor, k = 40):
-    for i in range(k):
+    return False
+
+# Realiza 40 iterações do teste tem_divisor para diferentes valores a's.
+def miller_rabin(valor, iteracoes = 40):
+    # Realizamos o teste para 40 iterações - assim a chance do número não ser primo
+    # é de (1/4)^40. 
+    for _ in range(iteracoes):
+        # O primeiro passo é gerar um número aleatório entre 2 e o (valor-1)
         a = systemRandom.randrange(2, valor-1)
+
+        # É composto (não é primo) se não tiver divisor
         if not tem_divisor(valor, a):
             return False
     
+    # É primo
     return True
 
 def gera_primo(tamanho_em_bits):
     while True:
-        # O valor gerado é sempre um número ímpar
-        valor = systemRandom.randrange(1 << tamanho_em_bits-1 , 1 << tamanho_em_bits) + 1
+        # O valor gerado é sempre um número ímpar - aumenta a chance de ser primo
+        valor = (systemRandom.randrange(1 << tamanho_em_bits - 1 , 1 << tamanho_em_bits) << 1) + 1
         
         # Testa se valor gerado é de fato um primo
         if(miller_rabin(valor)):
@@ -75,14 +81,11 @@ def calcula_d(e, z):
     return pow(e, -1, z)
 
 def geraChavesRSA(display=False):
-    """
-    Args:
+    # Onde:
+    #     e: chave pública expoente
+    #     n: chave pública multiplo de primos
+    #     d: chave privada inverso multiplicativo
 
-    Returns:
-        e: chave pública expoente
-        n: chave pública multiplo de primos
-        d: chave privada inverso multiplicativo
-    """
     p, q = gera_p_q()
     if display: print('p = ', p)
     if display: print('q = ', q)
