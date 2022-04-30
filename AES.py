@@ -245,7 +245,7 @@ def blocos_de_matriz_para_texto(matrizes):
 
 
             
-    return msg_texto
+    return msg_texto_final
 
 
 def AES(nonce_contador, chave):
