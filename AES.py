@@ -292,10 +292,10 @@ def cifra(msg, nonce, chave):
     msg_c_padding = msg_padding(msg.encode())
 
     #msg_c_padding = msg_padding(msg)
-    print('\nMENSAGEM COM PADDING: ', msg_c_padding)
+    # print('\nMENSAGEM COM PADDING: ', msg_c_padding)
 
     msg_blocos = divide_blocos(msg_c_padding)
-    print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
+    # print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
 
     msg_cifrada = []
 
