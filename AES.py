@@ -5,6 +5,7 @@ import string
 import numpy as np
 from sympy import block_collapse
 from colors import *
+import base64
 
 # LINK MT MT IMPORTANTE:
 # https://github.com/boppreh/aes/blob/master/aes.py
@@ -83,6 +84,7 @@ def msg_padding(msg):
         padding = bytes([0] * padding_len)
         # print("Padding: ", padding)
         return padding + msg
+    return msg
 
 def divide_blocos(message):
     # divide a msg em blocos de 16 bytes
@@ -234,13 +236,16 @@ def blocos_de_matriz_para_texto(matrizes):
         bloco_vetores = [list(blocos[x][i:i+4]) for i in range(0, len(blocos[x]), 4)]
         bytes_msg = bytes(list(np.matrix.flatten(np.array(bloco_vetores).T)))
         msg_texto += bytes_msg.decode()
+
     
     msg_texto_final = ""
     for x in msg_texto:
         if ord(x) > 0:
             msg_texto_final += x
+
+
             
-    return msg_texto_final
+    return msg_texto
 
 
 def AES(nonce_contador, chave):
@@ -285,10 +290,12 @@ def AES(nonce_contador, chave):
 def cifra(msg, nonce, chave):
 
     msg_c_padding = msg_padding(msg.encode())
-    # print('\nMENSAGEM COM PADDING: ', msg_c_padding)
+
+    #msg_c_padding = msg_padding(msg)
+    print('\nMENSAGEM COM PADDING: ', msg_c_padding)
 
     msg_blocos = divide_blocos(msg_c_padding)
-    # print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
+    print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
 
     msg_cifrada = []
 
