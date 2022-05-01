@@ -10,13 +10,12 @@ from binascii import hexlify
 from colors import printBlue, printGreen
 
 
-
 # numero de bits m e k
 BITS_M = 512
 BITS_K = 32
 
 def calcula_bits(texto):
-    num_bits = len(texto) * 8 #pq cada char é um byte ne?
+    num_bits = len(texto) * 8 
     return num_bits
 
 def string_to_bits(texto):
@@ -36,7 +35,7 @@ def bits_to_string(string_bits):
 
 def padding(texto):
     string_bits = string_to_bits(texto)
-    m = string_bits.rjust(BITS_M, '0') # nao sei bem se isso faz sentido mas acho que faz
+    m = string_bits.rjust(BITS_M, '0') 
     return m
 
 def gera_aleatorio():
@@ -48,12 +47,11 @@ def converte_bit_string_to_int(bitstring):
 def converte_int_to_bit_string(num, bit_len=BITS_M):
     return BitArray(uint=num, length=bit_len).bin
 
-# Inicio > Peguei essas funções prontas do WIKIPEDIA!!!!!!!!!!!!!!
+# https://en.wikipedia.org/wiki/Mask_generation_function#:~:text=4%20References-,Definition,bounds%20are%20generally%20very%20large.
 def i2osp(integer: int, size: int = 4) -> str:
     return b"".join([chr((integer >> (8 * i)) & 0xFF).encode() for i in reversed(range(size))])
 
 def mgf1(input_str: bytes, length: int, hash_func=hashlib.sha1) -> str: # Não testei com SHA3 ainda ...
-    """Mask generation function."""
     counter = 0
     output = b""
     while len(output) < length:
@@ -61,7 +59,7 @@ def mgf1(input_str: bytes, length: int, hash_func=hashlib.sha1) -> str: # Não t
         output += hash_func(input_str + C).digest()
         counter += 1
     return output[:length]
-# Final > Peguei essas funções prontas do WIKIPEDIA!!!!!!!!!!!!!!
+# -----------------------------------------------------------
 
 def G(r: int):
     r_bytes = str(r).encode()
@@ -75,14 +73,11 @@ def H(P1: int):
     P1_masked_int = int.from_bytes(P1_masked, 'big')
     return P1_masked_int
 
-# agora precisa fazer as funcoes G e H q nao entendi como sao 
 def cifra_OAEP(texto, e, n):
     m = padding(texto)
-
     # print("Inicial: ", m)
 
     r = gera_aleatorio()
-
     # print("R: ", r)
 
     # Calculando P1 

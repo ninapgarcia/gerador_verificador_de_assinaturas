@@ -1,6 +1,5 @@
 
 
-
 def interacao_com_usuario():
     print(" Você deseja: ")
     print(" 1- Encriptar um texto.")

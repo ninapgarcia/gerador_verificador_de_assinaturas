@@ -5,10 +5,6 @@ import string
 import numpy as np
 from sympy import block_collapse
 from colors import *
-import base64
-
-# LINK MT MT IMPORTANTE:
-# https://github.com/boppreh/aes/blob/master/aes.py
 
 
 # para substituicao de bytes na cifracao
@@ -67,7 +63,6 @@ def converte_array_de_bytes_para_string(array):
 
 def gera_nonce():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8)) #64 bits
-    # return random.randbytes(8)
 
 def pad_contador(contador):
     contador = str(contador)
@@ -83,11 +78,9 @@ def gera_chave():
 
 
 def msg_padding(msg):
-    # msg já é passada encoded
     if len(msg) % 16 != 0:
         padding_len = 16 - (len(msg) % 16)
         padding = bytes([0] * padding_len)
-        # print("Padding: ", padding)
         return padding + msg
     return msg
 
@@ -97,7 +90,6 @@ def divide_blocos(message):
     return blocos
 
 def vetor_para_matriz(msg):
-    # print("msg: ", msg)
     # transforma o vetor de 16 bytes em uma matriz 4x4 a cada 4 do vetor vira uma COLUNA
     bloco_vetores = [list(msg[i:i+4]) for i in range(0, len(msg), 4)]
     bloco_matriz = np.zeros((4, 4))
@@ -106,7 +98,6 @@ def vetor_para_matriz(msg):
     bloco_matriz[:, 2] = bloco_vetores[2]
     bloco_matriz[:, 3] = bloco_vetores[3]
 
-    # print("vt_pr_matriz: ", bloco_matriz)
     return bloco_matriz.astype(int)
 
 def coluna_shift(coluna):
@@ -192,15 +183,12 @@ def inv_row_shift(matriz):
 
     return nova_matriz.astype(int)
 
-# essa parte eu peguei do git do homi 
-# https://github.com/boppreh/aes/blob/master/aes.py
-# ---------------------------------------------------------------------
 
-# learned from http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
-xtime = lambda a: (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1) # o q ta rolando aq??? K K
+
+# http://cs.ucsb.edu/~koc/cs178/projects/JT/aes.c
+xtime = lambda a: (((a << 1) ^ 0x1B) & 0xFF) if (a & 0x80) else (a << 1)
 
 def mix_uma_coluna(coluna):
-    # see Sec 4.1.2 in The Design of Rijndael
     t = coluna[0] ^ coluna[1] ^ coluna[2] ^ coluna[3]
     u = coluna[0]
     coluna[0] ^= t ^ xtime(coluna[0] ^ coluna[1])
@@ -214,7 +202,6 @@ def mix_colunas(matriz):
     return matriz
 
 def inv_mix_colunas(matriz):
-    # see Sec 4.1.3 in The Design of Rijndael
     for i in range(4):
         u = xtime(xtime(matriz[i][0] ^ matriz[i][2]))
         v = xtime(xtime(matriz[i][1] ^ matriz[i][3]))
@@ -225,14 +212,6 @@ def inv_mix_colunas(matriz):
     
     return mix_colunas(matriz)
 
-
-
-# por enquanto so usei pra visualizacao mas acho q vai ser util
-def int_para_hex(lista):
-    lista_hex = []
-    for elem in lista:
-        lista_hex.append(hex(elem))
-    return lista_hex
 
 def blocos_de_matriz_para_texto(matrizes):
     blocos = divide_blocos(matrizes)
@@ -257,7 +236,6 @@ def AES(nonce_contador, chave):
 
     blocos = divide_blocos(nonce_contador)
 
-    # GAMBIARRA
     for bloco in blocos:
         bloco_nonce = vetor_para_matriz(bloco)    
 
@@ -295,8 +273,6 @@ def AES(nonce_contador, chave):
 def cifra(msg, nonce, chave):
 
     msg_c_padding = msg_padding(msg.encode())
-
-    #msg_c_padding = msg_padding(msg)
     # print('\nMENSAGEM COM PADDING: ', msg_c_padding)
 
     msg_blocos = divide_blocos(msg_c_padding)
@@ -315,10 +291,8 @@ def cifra(msg, nonce, chave):
         nonce_contador = nonce_e_contador(nonce, contador)
         # print('NONCE + CONTADOR: ', nonce_contador)
 
-        # print('\nCHAVE: ', chave)
         nonce_aes = AES(nonce_contador, chave)
         # print('\nNONCE AES CIFRA: \n', nonce_aes)
-
 
         bloco_cifrado = xor_matrizes(nonce_aes, bloco_msg) 
         # print('\nBLOCO CIFRADO: ', bloco_cifrado)
@@ -328,22 +302,18 @@ def cifra(msg, nonce, chave):
 
         msg_cifrada = np.append(msg_cifrada, bloco_cifrado)
         # print('\nMENSAGEM CIFRADA:  ', bloco_cifrado)
-
-
         
-    return msg_cifrada.astype(int), chave
+    return msg_cifrada.astype(int)
 
 
 
 
 def decifra(msg_cifrada, nonce, chave):
-    # print("\n DECIFRA  -----------------------------------------------------------")
 
     msg_blocos = divide_blocos(msg_cifrada)
     # print('\nMENSAGEM EM BLOCOS DE 16 BYTES: ', msg_blocos)
 
     msg_decifrada = []
-
     #percorre os blocos da mensagem
     for i in range(len(msg_blocos)):
         bloco_msg = msg_blocos[i].reshape((4, 4))
