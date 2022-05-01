@@ -59,6 +59,11 @@ RCON = (
     0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39,
 )
 
+def converte_array_de_bytes_para_string(array):
+    texto = ""
+    for caracter in array:
+        texto += chr(caracter)
+    return texto
 
 def gera_nonce():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8)) #64 bits

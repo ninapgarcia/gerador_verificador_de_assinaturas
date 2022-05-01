@@ -46,7 +46,9 @@ def main():
     print('\n -> Cifrando chave k com OAEP ...')
     chave_k_cifrada = cifra_OAEP(chave_k, chave_pub_e, chave_pub_n)
 
-    print(RED, "Mensagem cifrada: ", RESET, cifrada)
+    print(type(cifrada))
+    print(RED, "Mensagem cifrada bytes: ", RESET, cifrada)
+    if(opcao_usuario == 1): print(RED, "Mensagem cifrada texto: ", RESET, converte_array_de_bytes_para_string(cifrada))
     if opcao_usuario == 2: escreve_arquivo(cifrada, nome_arquivo + "Cifrado" + formato_arquivo)
 
     # Quarto bloco - A pessoa que recebeu as informações
@@ -67,7 +69,7 @@ def main():
     if(opcao_usuario == 1): print(GREEN, "Mensagem decifrada: ", RESET, decifrada)
     print(CYAN, '\n HASH DA MENSAGEM ORIGINAL:  ', RESET, msg_decifrada_hash)
     print(CYAN, 'HASH DA MENSAGEM DECIFRADA: ', RESET,  msg_hash)
-    if msg_decifrada_hash == msg_hash : print(GREEN, "\n\n -> Mensagem autentificada!", RESET)
+    if msg_decifrada_hash == msg_hash : print(GREEN, "\n -> Mensagem autentificada!", RESET)
 
     msg = decifrada.encode()
     if opcao_usuario == 2: escreve_arquivo(msg, nome_arquivo + "Decifrado" + formato_arquivo)
