@@ -60,7 +60,7 @@ def main():
     chave_k_decifrada = decifra_OAEP(chave_k_cifrada, chave_priv_d, chave_pub_n)
 
     print('\n -> Decifrando mensagem ...')
-    decifrada = decifra(cifrada, nonce, chave)
+    decifrada = decifra(cifrada, nonce, chave_k_decifrada)
 
 
     print('\n -> Gerando hash da mensagem decifrada ...')
