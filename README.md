@@ -30,13 +30,16 @@
 ## Compilação
 - Necessário python 3.8+
 - Necessária a instalação das bibliotecas:
-    - Ver isso aqui
+    - pip install bitstring
+    - pip install numpy
+    - pip install pycryptodome
+    - pip install sympy
 
 - Então basta rodar o comando no linux
 ```zsh
 python3 main.py  
 ```
-- Ou o comando no windows
+- Ou o comando no windows e mac
 ```zsh 
 python main.py  
 ```
